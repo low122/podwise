@@ -8,6 +8,9 @@ Agentic RAG pipeline for YouTube and podcast transcripts: ingest videos, then as
 2. **Ask** — Ask any question; a Claude agent uses retrieval tools (search transcripts, list episodes, get context) and answers with citations in the form `[Episode Title | MM:SS | link]`.
 3. Supports **English and Mandarin** transcripts (YouTube provides them; no extra config).
 
+<img width="855" height="900" alt="Example1" src="https://github.com/user-attachments/assets/87839cc0-ac2b-4385-9fe9-652d8c46121f" />
+
+
 ## Prerequisites
 
 - **Python 3.11+**
