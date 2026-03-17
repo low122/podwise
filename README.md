@@ -1,6 +1,6 @@
 # podwise
 
-Agentic RAG pipeline for YouTube and podcast transcripts: ingest videos, then ask questions and get answers with clickable timestamp links. Built with LangChain, ChromaDB, Ollama (embeddings), and Claude (Anthropic).
+Agentic RAG pipeline for YouTube transcripts: ingest videos, then ask questions and get answers with clickable timestamp links. Built with LangChain, ChromaDB, Ollama (embeddings), and Claude (Anthropic).
 
 ## What it does
 
