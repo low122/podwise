@@ -1,0 +1,22 @@
+# Env and secrets
+.env
+
+# Vector store (local, regeneratable)
+data/chroma/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+
+# Test / tooling
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
