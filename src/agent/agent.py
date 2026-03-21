@@ -38,7 +38,7 @@ def _tool_call_args(tc: object) -> dict:
     return getattr(tc, "args", None) or (tc.get("args", {}) if isinstance(tc, dict) else {})
 
 
-def ask(question: str, max_tool_rounds: int = 5) -> str:
+def ask(question: str, max_tool_rounds: int = 15) -> str:
     """Run the agent on one question; returns final answer text."""
     if not ANTHROPIC_API_KEY:
         return "Error: ANTHROPIC_API_KEY not set in .env"

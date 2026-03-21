@@ -1,21 +1,15 @@
-"""LangChain-compatible embedding instance (Ollama default)."""
+"""LangChain-compatible embedding instance (Voyage)."""
 
 from __future__ import annotations
 
 from langchain_core.embeddings import Embeddings
-from langchain_ollama import OllamaEmbeddings
+from langchain_voyageai import VoyageAIEmbeddings
 
-from src.config import (
-    EMBEDDING_PROVIDER,
-    OLLAMA_BASE_URL,
-    OLLAMA_EMBED_MODEL,
-)
+from src.config import VOYAGE_API_KEY, VOYAGE_MODEL
 
 
 def get_embedding_model() -> Embeddings:
-    """Return embedding model from config (Ollama by default)."""
-    if EMBEDDING_PROVIDER.lower() != "ollama":
-        raise ValueError(
-            f"Only 'ollama' is supported for EMBEDDING_PROVIDER; got {EMBEDDING_PROVIDER!r}"
-        )
-    return OllamaEmbeddings(base_url=OLLAMA_BASE_URL, model=OLLAMA_EMBED_MODEL)
+    """Return Voyage embedding model."""
+    if not VOYAGE_API_KEY:
+        raise ValueError("VOYAGE_API_KEY required. Get one at voyageai.com")
+    return VoyageAIEmbeddings(voyage_api_key=VOYAGE_API_KEY, model=VOYAGE_MODEL)

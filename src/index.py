@@ -1,4 +1,4 @@
-"""Ingestion orchestrator: YouTube URL -> ChromaDB."""
+"""Ingestion orchestrator: YouTube URL -> Supabase (pgvector)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from typing import Dict
 from src.ingestion.youtube import fetch_transcript
 from src.ingestion.cleaner import merge_segments
 from src.ingestion.chunker import semantic_chunk_documents
-from src.storage.chroma_store import ChromaStore
+from src.storage.supabase_store import SupabaseStore
 
 
 def ingest_youtube(url: str) -> Dict[str, object]:
@@ -36,7 +36,7 @@ def ingest_youtube(url: str) -> Dict[str, object]:
         language=metadata.language_code,
     )
 
-    store = ChromaStore()
+    store = SupabaseStore()
     store.upsert_documents(docs)
 
     print(

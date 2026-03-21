@@ -1,21 +1,12 @@
 # podwise
 
-Agentic RAG pipeline for YouTube and podcast transcripts: ingest videos, then ask questions and get answers with clickable timestamp links. Built with LangChain, ChromaDB, Ollama (embeddings), and Claude (Anthropic).
+Agentic RAG pipeline for YouTube and podcast transcripts: ingest videos, then ask questions and get answers with clickable timestamp links. Built with LangChain, Supabase (pgvector), Voyage (embeddings), and Claude (Anthropic).
 
 ## What it does
 
-1. **Ingest** — Give a YouTube URL; the pipeline downloads the transcript, merges short segments into paragraphs, runs semantic chunking, embeds with Ollama (`nomic-embed-text`), and stores in ChromaDB.
+1. **Ingest** — Give a YouTube URL; the pipeline downloads the transcript, merges short segments into paragraphs, runs semantic chunking, embeds with Voyage, and stores in Supabase.
 2. **Ask** — Ask any question; a Claude agent uses retrieval tools (search transcripts, list episodes, get context) and answers with citations in the form `[Episode Title | MM:SS | link]`.
 3. Supports **English and Mandarin** transcripts (YouTube provides them; no extra config).
-
-## Prerequisites
-
-- **Python 3.11+**
-- **Ollama** (local, for embeddings): [ollama.ai](https://ollama.ai). After install, run:
-  ```bash
-  ollama pull nomic-embed-text
-  ```
-- **Anthropic API key** (for the Q&A agent): set `ANTHROPIC_API_KEY` in `.env`.
 
 ## Setup
 
@@ -25,12 +16,12 @@ cd podwise
 uv sync   # or: pip install -e ".[dev]"
 
 cp .env.example .env
-# Edit .env: set ANTHROPIC_API_KEY (required for ask). Others have defaults.
+# Edit .env: set SUPABASE_URL, SUPABASE_SERVICE_KEY, VOYAGE_API_KEY, ANTHROPIC_API_KEY.
 ```
 
 ## Usage
 
-**Ingest a video (transcript → chunks → ChromaDB):**
+**Ingest a video (transcript → chunks → Supabase):**
 
 ```bash
 uv run python -m src.index "https://www.youtube.com/watch?v=VIDEO_ID"
@@ -55,11 +46,13 @@ uv run python -m src.retrieval.tools list
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CHROMA_PATH` | `./data/chroma` | ChromaDB persistence directory |
-| `COLLECTION_NAME` | `podwise` | Chroma collection name |
+| `SUPABASE_URL` | — | **Required** Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | — | **Required** Supabase service role key |
+| `SUPABASE_TABLE_NAME` | `documents` | Table for vector chunks |
+| `SUPABASE_QUERY_NAME` | `match_documents` | RPC for similarity search |
 | `TRANSCRIPTS_PATH` | `./data/transcripts` | Raw transcript cache (optional) |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server (embeddings) |
-| `OLLAMA_EMBED_MODEL` | `nomic-embed-text` | Embedding model |
+| `VOYAGE_API_KEY` | — | **Required** Voyage API key |
+| `VOYAGE_MODEL` | `voyage-3` | Voyage model (1024 dims) |
 | `ANTHROPIC_API_KEY` | — | **Required** for `ask` |
 | `LLM_MODEL` | `claude-sonnet-4-20250514` | Claude model for the agent |
 
@@ -70,13 +63,12 @@ podwise/
 ├── main.py                 # CLI: ask
 ├── src/
 │   ├── config.py           # Env settings
-│   ├── index.py            # Ingest: YouTube → clean → chunk → embed → Chroma
+│   ├── index.py            # Ingest: YouTube → clean → chunk → embed → Supabase
 │   ├── ingestion/          # youtube, cleaner, chunker (semantic)
-│   ├── embedding/         # Ollama embedder
-│   ├── storage/            # ChromaDB wrapper
+│   ├── embedding/         # Voyage embedder
+│   ├── storage/            # Supabase (pgvector) wrapper
 │   ├── retrieval/         # search_transcripts, get_episode_list, get_episode_context (+ LangChain tools)
 │   └── agent/              # Claude + tools (ReAct-style)
-├── data/chroma/            # Vector store (gitignored)
 └── .env.example
 ```
 
@@ -85,8 +77,8 @@ podwise/
 | Layer        | Choice |
 |-------------|--------|
 | Transcripts | `youtube-transcript-api` |
-| Chunking    | Time-based merge + LangChain `SemanticChunker` (Ollama) |
-| Embeddings  | Ollama `nomic-embed-text` |
-| Vector DB   | ChromaDB (`langchain-chroma`) |
+| Chunking    | Time-based merge + LangChain `SemanticChunker` (Voyage) |
+| Embeddings  | Voyage `voyage-3` |
+| Vector DB   | Supabase (pgvector, `langchain-community`) |
 | LLM / Agent | Anthropic Claude via `langchain-anthropic`; tools for search/list/context |
 | CLI         | Typer + Rich |

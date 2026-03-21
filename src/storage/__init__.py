@@ -1,2 +1,2 @@
-"""Storage layer: ChromaDB vector store helpers."""
+"""Storage layer: Supabase (pgvector) vector store helpers."""
 

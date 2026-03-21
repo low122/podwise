@@ -1,4 +1,4 @@
-"""High-level retrieval helpers over ChromaStore.
+"""High-level retrieval helpers over SupabaseStore.
 
 Plain functions for CLI; LangChain tools below for the agent.
 """
@@ -9,7 +9,7 @@ from typing import List
 
 from langchain_core.tools import tool
 
-from src.storage.chroma_store import ChromaStore
+from src.storage.supabase_store import SupabaseStore
 
 
 def _format_timestamp(seconds: float) -> str:
@@ -27,7 +27,7 @@ def search_transcripts(query: str, top_k: int = 5) -> str:
     Returns a human-readable string with:
     [Title | HH:MM:SS | link] then the chunk text.
     """
-    store = ChromaStore()
+    store = SupabaseStore()
     results = store.search(query, top_k=top_k)
     if not results:
         return "No results found in the current index."
@@ -47,7 +47,7 @@ def search_transcripts(query: str, top_k: int = 5) -> str:
 
 def get_episode_list() -> str:
     """List all ingested episodes with basic metadata."""
-    store = ChromaStore()
+    store = SupabaseStore()
     episodes = store.list_episodes()
     if not episodes:
         return "No episodes indexed yet. Try ingesting a YouTube URL first."
@@ -65,7 +65,7 @@ def get_episode_context(video_id: str, timestamp: float, window: int = 2) -> str
 
     window=2 -> 2 before + the main chunk + 2 after = up to 5 chunks.
     """
-    store = ChromaStore()
+    store = SupabaseStore()
     chunks = store.get_episode_chunks(video_id)
     if not chunks:
         return f"No chunks found for video_id={video_id!r}."

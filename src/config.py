@@ -22,17 +22,18 @@ def _path(key: str, default: str) -> Path:
     return Path(os.getenv(key, default)).expanduser().resolve()
 
 
-# ChromaDB
-CHROMA_PATH: Path = _path("CHROMA_PATH", "./data/chroma")
-COLLECTION_NAME: str = _str("COLLECTION_NAME", "podwise")
+# Supabase (pgvector)
+SUPABASE_URL: str = _str("SUPABASE_URL", "")
+SUPABASE_SERVICE_KEY: str = _str("SUPABASE_SERVICE_KEY", "")
+SUPABASE_TABLE_NAME: str = _str("SUPABASE_TABLE_NAME", "documents")
+SUPABASE_QUERY_NAME: str = _str("SUPABASE_QUERY_NAME", "match_documents")
 
 # Transcripts cache
 TRANSCRIPTS_PATH: Path = _path("TRANSCRIPTS_PATH", "./data/transcripts")
 
-# Embedding (Ollama default)
-EMBEDDING_PROVIDER: str = _str("EMBEDDING_PROVIDER", "ollama")
-OLLAMA_BASE_URL: str = _str("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_EMBED_MODEL: str = _str("OLLAMA_EMBED_MODEL", "nomic-embed-text")
+# Embedding (Voyage)
+VOYAGE_API_KEY: str = _str("VOYAGE_API_KEY", "")
+VOYAGE_MODEL: str = _str("VOYAGE_MODEL", "voyage-3")  # 1024 dims; voyage-3-lite=512
 
 # LLM
 LLM_PROVIDER: str = _str("LLM_PROVIDER", "anthropic")
