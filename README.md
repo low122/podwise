@@ -2,6 +2,8 @@
 
 Agentic RAG pipeline for YouTube and podcast transcripts: ingest videos, then ask questions and get answers with clickable timestamp links. Built with LangChain, Supabase (pgvector), Voyage (embeddings), and Claude (Anthropic).
 
+<img width="1239" height="856" alt="Screenshot 2026-03-22 at 02 54 50" src="https://github.com/user-attachments/assets/b77521d1-0a08-4786-bbb4-b74593c83a7b" />
+
 ## What it does
 
 1. **Ingest** — Give a YouTube URL; the pipeline downloads the transcript, merges short segments into paragraphs, runs semantic chunking, embeds with Voyage, and stores in Supabase.
