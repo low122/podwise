@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>podwise</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf9f7;
+  --fg:#1a1a1a;
+  --muted:#888;
+  --border:#e0ddd8;
+  --card:#fff;
+  --accent:#1a1a1a;
+  --accent-hover:#333;
+  --green:#2d6a4f;
+  --green-bg:#d8f3dc;
+  --red:#c1121f;
+  --red-bg:#fde8e8;
+  --radius:10px;
+  --font-display:'Instrument Serif',serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'DM Mono',monospace;
+}
+html{font-size:16px}
+body{
+  font-family:var(--font-body);
+  background:var(--bg);
+  color:var(--fg);
+  line-height:1.6;
+  min-height:100vh;
+}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+
+/* --- HEADER --- */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 2rem;
+  border-bottom:1px solid var(--border);
+  background:var(--bg);
+  position:sticky;top:0;z-index:100;
+}
+.logo{
+  display:flex;align-items:center;gap:.5rem;
+  font-family:var(--font-mono);font-weight:500;font-size:.95rem;
+  letter-spacing:-.02em;
+}
+.logo-icon{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--fg);color:var(--bg);
+  display:grid;place-items:center;
+  font-size:.7rem;font-weight:600;
+}
+.header-actions{display:flex;gap:.5rem}
+.btn{
+  display:inline-flex;align-items:center;gap:.35rem;
+  padding:.45rem .9rem;
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--card);color:var(--fg);
+  font-size:.82rem;font-weight:500;
+  transition:all .15s;
+}
+.btn:hover{border-color:var(--accent);background:var(--fg);color:var(--bg)}
+.btn-primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn-primary:hover{background:var(--accent-hover)}
+
+/* --- HERO --- */
+.hero{
+  padding:3.5rem 2rem 0;
+  max-width:720px;margin:0 auto;
+  text-align:left;
+}
+.hero-label{
+  font-family:var(--font-mono);font-size:.7rem;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:.75rem;
+}
+.hero h1{
+  font-family:var(--font-display);
+  font-size:clamp(2.2rem,5vw,3.2rem);
+  font-weight:400;line-height:1.12;
+  margin-bottom:.75rem;
+}
+.hero p{color:var(--muted);font-size:.95rem;max-width:400px}
+
+/* --- CHAT AREA --- */
+.chat-section{
+  max-width:720px;margin:2rem auto 0;
+  padding:0 2rem;
+}
+.chat-card{
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--card);overflow:hidden;
+}
+.chat-messages{
+  padding:1.5rem;min-height:200px;max-height:500px;
+  overflow-y:auto;
+}
+.msg{
+  display:flex;gap:.65rem;align-items:flex-start;
+  margin-bottom:1rem;
+}
+.msg:last-child{margin-bottom:0}
+.msg-avatar{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  background:var(--border);
+  display:grid;place-items:center;
+  font-family:var(--font-mono);font-size:.6rem;font-weight:600;
+  color:var(--muted);margin-top:2px;
+}
+.msg-avatar.bot{background:var(--fg);color:var(--bg)}
+.msg-text{font-size:.9rem;line-height:1.65}
+.msg-text h2{font-size:1rem;margin:1rem 0 .4rem;font-weight:600}
+.msg-text h3{font-size:.92rem;margin:.8rem 0 .3rem;font-weight:600}
+.msg-text ul,.msg-text ol{padding-left:1.2rem;margin:.3rem 0}
+.msg-text li{margin:.2rem 0}
+.msg-text strong{font-weight:600}
+.msg-text a{color:var(--green);text-decoration:underline}
+.cite-link{
+  display:inline-flex;align-items:center;gap:.3rem;
+  padding:.2rem .55rem;margin:.15rem .1rem;
+  border:1px solid var(--border);border-radius:6px;
+  background:var(--bg);color:var(--fg);
+  font-size:.75rem;font-family:var(--font-mono);
+  text-decoration:none;line-height:1.4;
+  transition:all .15s;vertical-align:middle;
+  max-width:100%;
+}
+.cite-link span{
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:350px;
+}
+.cite-link:hover{
+  background:var(--fg);color:var(--bg);border-color:var(--fg);
+}
+.cite-link-inline{
+  color:var(--green);font-size:.8rem;
+  word-break:break-all;text-decoration:underline;
+  text-underline-offset:2px;
+}
+.cite-link-inline:hover{color:var(--accent)}
+.msg-text blockquote{
+  border-left:3px solid var(--border);
+  padding-left:.8rem;color:var(--muted);
+  margin:.5rem 0;
+}
+
+.suggestions{
+  display:flex;flex-wrap:wrap;gap:.4rem;
+  padding:0 1.5rem 1rem;
+}
+.suggestion{
+  padding:.35rem .75rem;
+  border:1px solid var(--border);border-radius:20px;
+  background:transparent;color:var(--fg);
+  font-size:.78rem;transition:all .15s;
+}
+.suggestion:hover{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+.chat-input-area{
+  display:flex;align-items:flex-end;gap:.5rem;
+  padding:.75rem 1rem;
+  border-top:1px solid var(--border);
+}
+.chat-input{
+  flex:1;resize:none;border:none;outline:none;
+  font-family:var(--font-body);font-size:.88rem;
+  background:transparent;color:var(--fg);
+  min-height:40px;max-height:120px;
+  padding:.4rem .2rem;line-height:1.5;
+}
+.chat-input::placeholder{color:var(--muted)}
+.send-btn{
+  width:36px;height:36px;border-radius:50%;
+  border:1px solid var(--border);background:var(--card);
+  display:grid;place-items:center;flex-shrink:0;
+  transition:all .15s;
+}
+.send-btn:hover{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.send-btn:disabled{opacity:.3;cursor:not-allowed}
+.send-btn svg{width:16px;height:16px}
+
+.chat-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.6rem 1.5rem;
+  border-top:1px solid var(--border);
+  font-size:.75rem;color:var(--muted);
+}
+.chat-footer .btn{font-size:.75rem;padding:.3rem .65rem}
+
+/* --- EPISODES --- */
+.episodes-section{
+  max-width:720px;margin:2.5rem auto 3rem;
+  padding:0 2rem;
+}
+.section-label{
+  font-family:var(--font-mono);font-size:.68rem;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:.75rem;
+}
+.episode-list{display:flex;flex-direction:column;gap:.5rem}
+.episode{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.75rem 1rem;
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--card);
+  transition:border-color .15s;
+}
+.episode:hover{border-color:var(--accent)}
+.ep-play{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  border:1px solid var(--border);background:var(--card);
+  display:grid;place-items:center;
+  transition:all .15s;
+}
+.ep-play:hover{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.ep-play svg{width:12px;height:12px}
+.ep-info{flex:1;min-width:0}
+.ep-title{
+  font-size:.85rem;font-weight:500;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ep-meta{font-size:.72rem;color:var(--muted);font-family:var(--font-mono)}
+.ep-status{
+  font-size:.72rem;font-family:var(--font-mono);color:var(--green);
+}
+
+.empty-state{
+  text-align:center;padding:2rem;color:var(--muted);
+  font-size:.85rem;
+}
+
+/* --- MODAL --- */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.4);
+  display:none;place-items:center;z-index:200;
+}
+.modal-overlay.active{display:grid}
+.modal{
+  background:var(--card);border-radius:var(--radius);
+  padding:2rem;width:min(440px,90vw);
+  box-shadow:0 20px 60px rgba(0,0,0,.15);
+}
+.modal h2{
+  font-family:var(--font-display);
+  font-size:1.4rem;font-weight:400;margin-bottom:.25rem;
+}
+.modal p{font-size:.85rem;color:var(--muted);margin-bottom:1.25rem}
+.modal-input{
+  width:100%;padding:.6rem .8rem;
+  border:1px solid var(--border);border-radius:var(--radius);
+  font-family:var(--font-body);font-size:.88rem;
+  outline:none;background:var(--bg);
+  transition:border-color .15s;
+}
+.modal-input:focus{border-color:var(--accent)}
+.modal-actions{
+  display:flex;justify-content:flex-end;gap:.5rem;
+  margin-top:1rem;
+}
+.toast{
+  position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+  padding:.6rem 1.2rem;border-radius:var(--radius);
+  font-size:.82rem;font-weight:500;
+  box-shadow:0 4px 20px rgba(0,0,0,.12);
+  opacity:0;transition:opacity .3s;pointer-events:none;z-index:300;
+}
+.toast.show{opacity:1}
+.toast.success{background:var(--green-bg);color:var(--green)}
+.toast.error{background:var(--red-bg);color:var(--red)}
+
+/* --- LOADING --- */
+.loading-dots::after{
+  content:'';
+  animation:dots 1.2s steps(4,end) infinite;
+}
+@keyframes dots{
+  0%{content:''}
+  25%{content:'.'}
+  50%{content:'..'}
+  75%{content:'...'}
+}
+.spinner{
+  display:inline-block;width:14px;height:14px;
+  border:2px solid var(--border);border-top-color:var(--fg);
+  border-radius:50%;animation:spin .6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* --- RESPONSIVE --- */
+@media(max-width:600px){
+  header{padding:.75rem 1rem}
+  .hero,.chat-section,.episodes-section{padding-left:1rem;padding-right:1rem}
+  .hero h1{font-size:2rem}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">pw</div>
+    <span>podwise</span>
+  </div>
+  <div class="header-actions">
+    <a href="https://github.com/low122/podwise" target="_blank" class="btn">github</a>
+    <button class="btn btn-primary" onclick="openModal()">+ add podcast</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label">podcast intelligence</div>
+  <h1>Ask anything.<br>Find the moment.</h1>
+  <p>Index any podcast or YouTube link. Get answers with exact timestamp citations.</p>
+</section>
+
+<!-- CHAT -->
+<section class="chat-section">
+  <div class="chat-card">
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg">
+        <div class="msg-avatar bot">pw</div>
+        <div class="msg-text" id="welcomeMsg">Loading...</div>
+      </div>
+    </div>
+    <div class="suggestions" id="suggestions">
+      <button class="suggestion" onclick="askSuggestion(this)">What topics are covered?</button>
+      <button class="suggestion" onclick="askSuggestion(this)">Who is Saining Xie?</button>
+      <button class="suggestion" onclick="askSuggestion(this)">What does he say about world models?</button>
+    </div>
+    <div class="chat-input-area">
+      <textarea class="chat-input" id="chatInput" placeholder="Ask about your podcasts..." rows="1" onkeydown="handleKey(event)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendQuestion()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <div class="chat-footer">
+      <span id="statusText">loading...</span>
+      <button class="btn" onclick="openModal()">+ add podcast</button>
+    </div>
+  </div>
+</section>
+
+<!-- EPISODES -->
+<section class="episodes-section">
+  <div class="section-label">indexed episodes</div>
+  <div class="episode-list" id="episodeList">
+    <div class="empty-state">Loading episodes...</div>
+  </div>
+</section>
+
+<!-- INGEST MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <h2>Add a podcast</h2>
+    <p>Paste a YouTube video URL. We'll download the transcript, chunk it, and index it for search.</p>
+    <input type="text" class="modal-input" id="ingestUrl" placeholder="https://www.youtube.com/watch?v=..." />
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="ingestBtn" onclick="ingestVideo()">Index video</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '';
+
+// --- State ---
+let episodes = [];
+let isAsking = false;
+
+// --- Init ---
+document.addEventListener('DOMContentLoaded', loadEpisodes);
+
+async function loadEpisodes() {
+  try {
+    const res = await fetch(`${API}/episodes`);
+    const data = await res.json();
+    episodes = data.episodes || [];
+    renderEpisodes();
+    updateStatus();
+    updateWelcome();
+  } catch (e) {
+    document.getElementById('episodeList').innerHTML =
+      '<div class="empty-state">Could not load episodes.</div>';
+    document.getElementById('statusText').textContent = 'offline';
+  }
+}
+
+function renderEpisodes() {
+  const el = document.getElementById('episodeList');
+  if (!episodes.length) {
+    el.innerHTML = '<div class="empty-state">No episodes indexed yet. Add a podcast to get started.</div>';
+    return;
+  }
+  el.innerHTML = episodes.map(ep => `
+    <div class="episode">
+      <a href="https://www.youtube.com/watch?v=${ep.video_id}" target="_blank" class="ep-play">
+        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </a>
+      <div class="ep-info">
+        <div class="ep-title">${esc(ep.title || ep.video_id)}</div>
+        <div class="ep-meta">${esc(ep.video_id)} &middot; ${esc(ep.language || '')}</div>
+      </div>
+      <div class="ep-status">indexed</div>
+    </div>
+  `).join('');
+}
+
+function updateStatus() {
+  const n = episodes.length;
+  document.getElementById('statusText').textContent =
+    n ? `${n} episode${n > 1 ? 's' : ''} \u00b7 ready` : 'no episodes';
+}
+
+function updateWelcome() {
+  const n = episodes.length;
+  document.getElementById('welcomeMsg').textContent = n
+    ? `${n} episode${n > 1 ? 's' : ''} indexed. Ask me anything, or add more podcasts below.`
+    : 'No episodes indexed yet. Add a podcast to get started!';
+}
+
+// --- Ask ---
+function askSuggestion(btn) {
+  document.getElementById('chatInput').value = btn.textContent;
+  sendQuestion();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuestion(); }
+}
+
+async function sendQuestion() {
+  const input = document.getElementById('chatInput');
+  const q = input.value.trim();
+  if (!q || isAsking) return;
+
+  isAsking = true;
+  input.value = '';
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('suggestions').style.display = 'none';
+
+  addMessage('user', q);
+  const botId = addMessage('bot', '<span class="loading-dots">Thinking</span>');
+
+  try {
+    const res = await fetch(`${API}/ask`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Request failed');
+    document.getElementById(botId).innerHTML = renderMarkdown(data.answer);
+  } catch (e) {
+    document.getElementById(botId).innerHTML =
+      `<span style="color:var(--red)">Error: ${esc(e.message)}</span>`;
+  } finally {
+    isAsking = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+let msgCounter = 0;
+function addMessage(role, html) {
+  const id = `msg-${++msgCounter}`;
+  const avatar = role === 'bot'
+    ? '<div class="msg-avatar bot">pw</div>'
+    : '<div class="msg-avatar">you</div>';
+  const container = document.getElementById('chatMessages');
+  container.insertAdjacentHTML('beforeend',
+    `<div class="msg">${avatar}<div class="msg-text" id="${id}">${html}</div></div>`
+  );
+  container.scrollTop = container.scrollHeight;
+  return id;
+}
+
+// --- Ingest ---
+function openModal() {
+  document.getElementById('modalOverlay').classList.add('active');
+  document.getElementById('ingestUrl').value = '';
+  setTimeout(() => document.getElementById('ingestUrl').focus(), 100);
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+async function ingestVideo() {
+  const url = document.getElementById('ingestUrl').value.trim();
+  if (!url) return;
+
+  const btn = document.getElementById('ingestBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Indexing...';
+
+  try {
+    const res = await fetch(`${API}/upload_link`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Ingestion failed');
+
+    showToast(`Indexed "${data.title}" - ${data.chunks} chunks`, 'success');
+    closeModal();
+    await loadEpisodes();
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Index video';
+  }
+}
+
+// --- Helpers ---
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function renderMarkdown(text) {
+  // Extract links before escaping so URLs don't get mangled
+  const links = [];
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
+    links.push({ label, url });
+    return `%%LINK_${links.length - 1}%%`;
+  });
+
+  // Escape HTML
+  text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Headings
+  text = text.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  text = text.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+
+  // Bold
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+  // Restore links as styled citation chips
+  text = text.replace(/%%LINK_(\d+)%%/g, (_, i) => {
+    const lnk = links[+i];
+    const isYoutube = lnk.url.includes('youtube.com') || lnk.url.includes('youtu.be');
+    const icon = isYoutube
+      ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polygon points="5 3 19 12 5 21 5 3"/></svg>'
+      : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+    return `<a href="${esc(lnk.url)}" target="_blank" class="cite-link">${icon}<span>${esc(lnk.label)}</span></a>`;
+  });
+
+  // Also linkify bare URLs that aren't already inside an href
+  text = text.replace(/(?<!href=")(?<!">)(https?:\/\/[^\s<]+)/g,
+    '<a href="$1" target="_blank" class="cite-link-inline">$1</a>');
+
+  // Lists
+  text = text.replace(/^- (.+)$/gm, '<li>$1</li>');
+  text = text.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
+  text = text.replace(/<\/ul>\s*<ul>/g, '');
+
+  // Blockquotes
+  text = text.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // Paragraphs
+  text = text.replace(/\n{2,}/g, '<br><br>');
+  text = text.replace(/\n/g, '<br>');
+
+  return text;
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+</script>
+</body>
+</html>

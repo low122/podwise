@@ -2,21 +2,15 @@
 
 from __future__ import annotations
 
+import re
+from collections.abc import AsyncIterator
 from typing import List
 
 from langchain_anthropic import ChatAnthropic
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage, HumanMessage, SystemMessage, ToolMessage
 
-from src.config import ANTHROPIC_API_KEY, LLM_MODEL
+from src.config import ANTHROPIC_API_KEY, LLM_MODEL, SYSTEM_PROMPT, ANTHROPIC_TOOLS
 from src.retrieval.tools import AGENT_TOOLS
-
-SYSTEM_PROMPT = """You are a podcast knowledge assistant. You have access to transcripts from
-multiple podcasts and YouTube videos. When answering:
-- ALWAYS cite the source: [Episode Title | MM:SS | link]
-- If comparing across episodes, organize by speaker/episode
-- If asked for notes or summary, structure with headers and bullet points
-- If you don't find relevant content, say so honestly
-"""
 
 
 def _run_tool(name: str, args: dict) -> str:
@@ -84,5 +78,4 @@ def ask(question: str, max_tool_rounds: int = 15) -> str:
             elif hasattr(block, "text"):
                 parts.append(block.text)
         return "".join(parts) if parts else "No text in response."
-
     return "No response generated."
