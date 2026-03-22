@@ -459,8 +459,14 @@ async function sendQuestion() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question: q }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Request failed');
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = null; }
+    if (!res.ok) {
+      const msg = data?.detail || (res.status === 429 ? 'Rate limit exceeded. Please wait and try again.' : 'Request failed');
+      throw new Error(msg);
+    }
+    if (!data?.answer) throw new Error('Empty response from server');
     document.getElementById(botId).innerHTML = renderMarkdown(data.answer);
   } catch (e) {
     document.getElementById(botId).innerHTML =
@@ -512,8 +518,13 @@ async function ingestVideo() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Ingestion failed');
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = null; }
+    if (!res.ok) {
+      const msg = data?.detail || (res.status === 429 ? 'Rate limit exceeded. Please wait and try again.' : 'Ingestion failed');
+      throw new Error(msg);
+    }
 
     showToast(`Indexed "${data.title}" - ${data.chunks} chunks`, 'success');
     closeModal();

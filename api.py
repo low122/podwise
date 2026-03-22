@@ -10,10 +10,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from pydantic import BaseModel
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 
 from src.agent.agent import ask
@@ -25,7 +25,7 @@ def _get_real_client_ip(request: Request) -> str:
     """Extract real client IP behind Render's reverse proxy."""
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
-        return forwarded.split(",")[-1].strip()
+        return forwarded.split(",")[0].strip()
     real_ip = request.headers.get("x-real-ip")
     if real_ip:
         return real_ip.strip()
@@ -35,7 +35,15 @@ def _get_real_client_ip(request: Request) -> str:
 limiter = Limiter(key_func=_get_real_client_ip)
 app = FastAPI(title="Podwise", description="Agentic RAG over podcast transcripts")
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": f"Rate limit exceeded: {exc.detail}"},
+    )
+
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
