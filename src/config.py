@@ -80,3 +80,8 @@ ANTHROPIC_TOOLS = [
         },
     },
 ]
+
+JWT_SECRET: str = _str("JWT_SECRET", "")
+GOOGLE_CLIENT_ID: str = _str("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET: str = _str("GOOGLE_CLIENT_SECRET", "")
+GOOGLE_REDIRECT: str = _str("GOOGLE_REDIRECT", "http://localhost:8000")

@@ -2,32 +2,36 @@
 
 from __future__ import annotations
 
-from typing import Dict
+from typing import Dict, Generator
 
 from src.ingestion.youtube import fetch_transcript
 from src.ingestion.cleaner import merge_segments
 from src.ingestion.chunker import semantic_chunk_documents
 from src.storage.supabase_store import SupabaseStore
 
+TOTAL_STEPS = 5
 
-def ingest_youtube(url: str) -> Dict[str, object]:
-    """End-to-end ingestion for a single YouTube URL.
 
-    Returns small dict with counts and video metadata.
-    """
-    print(f"Fetching transcript for {url} ...")
+def ingest_youtube_stream(url: str) -> Generator[Dict[str, object], None, None]:
+    """Yields progress dicts for each pipeline stage. Last event has 'result'."""
+
+    yield {"step": 1, "total": TOTAL_STEPS, "status": "Fetching transcript..."}
     data = fetch_transcript(url)
     metadata = data["metadata"]
     segments = data["segments"]
 
-    print(
-        f"Downloaded transcript for '{metadata.title}' "
-        f"({metadata.video_id}) — {len(segments)} segments."
-    )
-
+    yield {
+        "step": 2, "total": TOTAL_STEPS,
+        "status": "Cleaning transcript...",
+        "detail": f"'{metadata.title}' - {len(segments)} segments",
+    }
     blocks = merge_segments(segments)
-    print(f"Merged into {len(blocks)} time-aware blocks. Running semantic chunking...")
 
+    yield {
+        "step": 3, "total": TOTAL_STEPS,
+        "status": "Chunking into segments...",
+        "detail": f"Merged into {len(blocks)} blocks",
+    }
     docs = semantic_chunk_documents(
         blocks=blocks,
         video_id=metadata.video_id,
@@ -36,15 +40,15 @@ def ingest_youtube(url: str) -> Dict[str, object]:
         language=metadata.language_code,
     )
 
+    yield {
+        "step": 4, "total": TOTAL_STEPS,
+        "status": "Embedding and storing...",
+        "detail": f"{len(docs)} chunks to store",
+    }
     store = SupabaseStore()
     store.upsert_documents(docs)
 
-    print(
-        f"Ingested '{metadata.title}' — "
-        f"{len(segments)} segments -> {len(blocks)} blocks -> {len(docs)} chunks -> stored."
-    )
-
-    return {
+    result = {
         "video_id": metadata.video_id,
         "title": metadata.title,
         "channel": metadata.channel,
@@ -53,6 +57,22 @@ def ingest_youtube(url: str) -> Dict[str, object]:
         "blocks": len(blocks),
         "chunks": len(docs),
     }
+    yield {
+        "step": 5, "total": TOTAL_STEPS,
+        "status": "Done!",
+        "detail": f"Indexed {len(docs)} chunks",
+        "result": result,
+    }
+
+
+def ingest_youtube(url: str) -> Dict[str, object]:
+    """Blocking version - runs the full pipeline and returns the result."""
+    result = None
+    for event in ingest_youtube_stream(url):
+        print(f"[{event['step']}/{event['total']}] {event['status']}")
+        if "result" in event:
+            result = event["result"]
+    return result
 
 
 if __name__ == "__main__":

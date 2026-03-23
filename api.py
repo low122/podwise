@@ -8,33 +8,45 @@ from pathlib import Path
 # Ensure project root is on path when running as uvicorn api:app
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from fastapi import FastAPI, HTTPException, Request
+import json
+import traceback
+
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 
 from src.agent.agent import ask
-from src.index import ingest_youtube
+from src.auth.router import router as auth_router, get_current_user
+from src.index import ingest_youtube_stream
 from src.storage.supabase_store import SupabaseStore
 
 
-def _get_real_client_ip(request: Request) -> str:
-    """Extract real client IP behind Render's reverse proxy."""
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    real_ip = request.headers.get("x-real-ip")
-    if real_ip:
-        return real_ip.strip()
-    return request.client.host if request.client else "unknown"
+def _get_user_id_from_jwt(request: Request) -> str:
+    """Extract user_id from JWT for per-user rate limiting."""
+    from jose import jwt as jose_jwt, JWTError
+    from src.config import JWT_SECRET
+    # Check Authorization header first (POST endpoints)
+    auth = request.headers.get("authorization", "")
+    if auth.startswith("Bearer "):
+        token = auth[7:]
+    else:
+        # Fall back to query param (SSE endpoint)
+        token = request.query_params.get("token", "")
+    try:
+        payload = jose_jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        return payload["sub"]
+    except (JWTError, KeyError):
+        return "anonymous"
 
 
-limiter = Limiter(key_func=_get_real_client_ip)
+limiter = Limiter(key_func=_get_user_id_from_jwt)
 app = FastAPI(title="Podwise", description="Agentic RAG over podcast transcripts")
 app.state.limiter = limiter
+app.include_router(auth_router)
 
 
 @app.exception_handler(RateLimitExceeded)
@@ -53,9 +65,6 @@ class AskRequest(BaseModel):
     question: str
     max_tool_rounds: int = 15
 
-
-class UploadLinkRequest(BaseModel):
-    url: str
 
 
 @app.get("/")
@@ -81,20 +90,34 @@ def list_episodes() -> dict:
 
 
 @app.post("/ask")
-@limiter.limit("3/30minutes")
-def ask_endpoint(request: Request, body: AskRequest) -> dict:
+@limiter.limit("3/30minutes", key_func=_get_user_id_from_jwt)
+def ask_endpoint(request: Request, body: AskRequest, user=Depends(get_current_user)) -> dict:
     answer = ask(question=body.question, max_tool_rounds=body.max_tool_rounds)
     return {"answer": answer}
 
 
-@app.post("/upload_link")
-@limiter.limit("2/hour")
-def upload_link_endpoint(request: Request, body: UploadLinkRequest) -> dict:
-    """Ingest a YouTube video: fetch transcript, chunk, embed, store in index."""
-    import traceback
+
+def _get_user_from_token_query(request: Request, token: str = Query(...)) -> dict:
+    """Verify JWT from query param. EventSource can't send headers."""
+    from jose import jwt as jose_jwt, JWTError
+    from src.config import JWT_SECRET
     try:
-        result = ingest_youtube(body.url)
-        return {"status": "ok", **result}
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
+        payload = jose_jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        return {"user_id": payload["sub"], "email": payload["email"]}
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+
+@app.get("/upload_link/stream")
+@limiter.limit("2/hour", key_func=_get_user_id_from_jwt)
+def upload_link_stream(request: Request, url: str = Query(...), user=Depends(_get_user_from_token_query)):
+    """SSE endpoint that streams ingestion progress events."""
+    def event_generator():
+        try:
+            for event in ingest_youtube_stream(url):
+                yield f"data: {json.dumps(event)}\n\n"
+        except Exception as e:
+            traceback.print_exc()
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")

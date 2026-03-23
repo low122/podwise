@@ -61,6 +61,18 @@ class SupabaseStore:
             return
         self._store.add_documents(list(documents))
 
+    def upsert_user(self, email: str, provider: str, provider_id: str) -> str:
+        """Insert user or return existing. Returns the user's UUID."""
+        result = (
+            self._client.table("users")
+            .upsert(
+                {"email": email, "provider": provider, "provider_id": provider_id},
+                on_conflict="email",
+            )
+            .execute()
+        )
+        return result.data[0]["id"]
+
     # --------- read / query ----------
     def search(
         self,
