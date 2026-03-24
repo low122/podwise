@@ -521,7 +521,7 @@ function closeLoginPrompt(e) {
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
   // Capture token from OAuth redirect
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(window.location.hash.slice(1));
   const token = params.get('token');
   if (token) {
     setToken(token);

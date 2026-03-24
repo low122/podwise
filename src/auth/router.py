@@ -91,4 +91,4 @@ async def google_callback(code: str):
 
     token = _make_jwt(user_id, info["email"])
     # Redirect back to the frontend with the JWT as a query param
-    return RedirectResponse(f"{GOOGLE_REDIRECT}?token={token}")
+    return RedirectResponse(f"{GOOGLE_REDIRECT}#token={token}")
