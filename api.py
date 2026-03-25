@@ -91,8 +91,11 @@ def list_episodes() -> dict:
 
 @app.post("/ask")
 @limiter.limit("3/30minutes", key_func=_get_user_id_from_jwt)
-def ask_endpoint(request: Request, body: AskRequest, user=Depends(get_current_user)) -> dict:
-    answer = ask(question=body.question, max_tool_rounds=body.max_tool_rounds)
+async def ask_endpoint(request: Request, body: AskRequest, user=Depends(get_current_user)) -> dict:
+    import asyncio
+    answer = await asyncio.get_event_loop().run_in_executor(
+        None, lambda: ask(question=body.question, max_tool_rounds=body.max_tool_rounds)
+    )
     return {"answer": answer}
 
 

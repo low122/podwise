@@ -46,6 +46,7 @@ def ingest_youtube_stream(url: str) -> Generator[Dict[str, object], None, None]:
         "detail": f"{len(docs)} chunks to store",
     }
     store = SupabaseStore()
+    store.delete_episode(metadata.video_id)
     store.upsert_documents(docs)
 
     result = {
