@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import html
+import os
 import re
 import urllib.parse
 import urllib.request
@@ -14,6 +15,7 @@ from youtube_transcript_api import (
     TranscriptsDisabled,
     YouTubeTranscriptApi,
 )
+from youtube_transcript_api.proxies import WebshareProxyConfig
 
 
 @dataclass
@@ -98,7 +100,20 @@ def fetch_transcript(url: str, languages: Optional[List[str]] = None) -> Dict[st
     """
     video_id = _extract_video_id(url)
 
-    api = YouTubeTranscriptApi()
+    from dotenv import load_dotenv
+    load_dotenv()
+    proxy_user = os.getenv("WEBSHARE_PROXY_USERNAME", "").strip()
+    proxy_pass = os.getenv("WEBSHARE_PROXY_PASSWORD", "").strip()
+    if proxy_user and proxy_pass:
+        api = YouTubeTranscriptApi(
+            proxy_config=WebshareProxyConfig(
+                proxy_username=proxy_user,
+                proxy_password=proxy_pass,
+                filter_ip_locations=["us"]
+            )
+        )
+    else:
+        api = YouTubeTranscriptApi()
     try:
         transcript = api.fetch(
             video_id,
