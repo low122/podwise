@@ -2,7 +2,7 @@
 
 Agentic RAG pipeline for YouTube and podcast transcripts: ingest videos, then ask questions and get answers with clickable timestamp links. Built with LangChain, Supabase (pgvector), Voyage (embeddings), and Claude (Anthropic).
 
-<img width="1239" height="856" alt="Screenshot 2026-03-22 at 02 54 50" src="https://github.com/user-attachments/assets/b77521d1-0a08-4786-bbb4-b74593c83a7b" />
+<img width="1238" height="1194" alt="Screenshot 2026-03-26 at 13 29 35" src="https://github.com/user-attachments/assets/03a5675e-c0c7-4c31-bb45-bff46e752326" />
 
 ## What it does
 
